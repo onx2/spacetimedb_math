@@ -1,6 +1,6 @@
 [package]
 name = "spacetimedb_math"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 license = "MIT"
 description = "Common math types and SpacetimeDB integrations for server-side Rust modules."
