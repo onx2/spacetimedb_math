@@ -24,12 +24,17 @@
 #[cfg(all(feature = "f32", feature = "f64"))]
 compile_error!("Features 'f32' and 'f64' are mutually exclusive.");
 
+pub mod conventions;
 pub mod quat;
 pub mod scalar;
+#[cfg(feature = "timing")]
+pub mod timing;
 pub mod vec2;
 pub mod vec3;
 
 pub use quat::*;
 pub use scalar::*;
+#[cfg(feature = "timing")]
+pub use timing::*;
 pub use vec2::*;
 pub use vec3::*;

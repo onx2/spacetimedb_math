@@ -1,23 +1,7 @@
 use crate::{Scalar, Vec2};
 use spacetimedb::SpacetimeType;
 
-/// A 3-dimensional vector in a right-handed, Y-up coordinate system.
-///
-/// +X is "right", -X is "left"
-/// +Y is "up", -Y is "down"
-/// +Z is "backward", -Z is "forward"
-///
-/// ```text
-///      Y (Up)
-///      |
-///      |   -Z (Forward / Into Screen)
-///      |  /
-///      | /
-///      o --------- X (Right)
-///     /
-///    /
-///   Z (Backward / Out of Screen)
-/// ```
+/// A 3-dimensional vector with `x`, `y`, and `z` components.
 ///
 /// # Examples
 /// ```
@@ -31,11 +15,11 @@ use spacetimedb::SpacetimeType;
 #[derive(SpacetimeType, Debug, Default, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Vec3 {
-    /// +X is "right", -X is "left"
+    /// X component.
     pub x: Scalar,
-    /// +Y is "up", -Y is "down"
+    /// Y component.
     pub y: Scalar,
-    /// +Z is "backward", -Z is "forward"
+    /// Z component.
     pub z: Scalar,
 }
 
@@ -44,34 +28,18 @@ impl Vec3 {
     pub const ZERO: Vec3 = Vec3::new(0.0, 0.0, 0.0);
     pub const ONE: Vec3 = Vec3::new(1.0, 1.0, 1.0);
 
-    // Y-axis constants
-    pub const UP: Vec3 = Vec3::new(0.0, 1.0, 0.0);
-    pub const DOWN: Vec3 = Vec3::new(0.0, -1.0, 0.0);
-
-    // X-axis constants
-    pub const RIGHT: Vec3 = Vec3::new(1.0, 0.0, 0.0);
-    pub const LEFT: Vec3 = Vec3::new(-1.0, 0.0, 0.0);
-
-    // Z-axis constants
-    pub const BACKWARD: Vec3 = Vec3::new(0.0, 0.0, 1.0);
-    pub const FORWARD: Vec3 = Vec3::new(0.0, 0.0, -1.0);
-
     #[inline(always)]
     pub const fn new(x: Scalar, y: Scalar, z: Scalar) -> Self {
         Vec3 { x, y, z }
     }
 
     /// Returns the XY components of this vector.
-    ///
-    /// This is the vertical plane in the crate's right-handed, Y-up coordinate system.
     #[inline]
     pub const fn xy(&self) -> Vec2 {
         Vec2::new(self.x, self.y)
     }
 
     /// Returns the XZ components of this vector.
-    ///
-    /// This is the ground plane in the crate's right-handed, Y-up coordinate system.
     #[inline]
     pub const fn xz(&self) -> Vec2 {
         Vec2::new(self.x, self.z)
@@ -81,6 +49,16 @@ impl Vec3 {
     #[inline]
     pub fn dot(&self, other: Vec3) -> Scalar {
         self.x * other.x + self.y * other.y + self.z * other.z
+    }
+
+    /// Returns the cross product of this vector and `other`.
+    #[inline]
+    pub fn cross(&self, other: Vec3) -> Vec3 {
+        Vec3::new(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x,
+        )
     }
 
     /// Returns the squared length (magnitude) of this vector.
@@ -145,13 +123,27 @@ mod nalgebra_impls {
     impl From<nalgebra::Vector3<Scalar>> for Vec3 {
         #[inline(always)]
         fn from(v: nalgebra::Vector3<Scalar>) -> Self {
-            Vec3::new(v.x, v.y, v.z)
+            Self::new(v.x, v.y, v.z)
         }
     }
     impl From<Vec3> for nalgebra::Vector3<Scalar> {
         #[inline(always)]
         fn from(v: Vec3) -> Self {
-            nalgebra::Vector3::new(v.x, v.y, v.z)
+            Self::new(v.x, v.y, v.z)
+        }
+    }
+
+    impl From<Vec3> for nalgebra::Translation3<f32> {
+        #[inline(always)]
+        fn from(v: Vec3) -> Self {
+            Self::new(v.x, v.y, v.z)
+        }
+    }
+
+    impl From<nalgebra::Translation3<f32>> for Vec3 {
+        #[inline(always)]
+        fn from(v: nalgebra::Translation3<f32>) -> Self {
+            Self::new(v.x, v.y, v.z)
         }
     }
 }
@@ -174,7 +166,7 @@ mod glam_impls {
     #[cfg(feature = "f32")]
     impl From<Vec3> for glam::Vec3 {
         fn from(v: Vec3) -> Self {
-            glam::Vec3::new(v.x, v.y, v.z)
+            Self::new(v.x, v.y, v.z)
         }
     }
 
@@ -192,7 +184,7 @@ mod glam_impls {
     #[cfg(feature = "f64")]
     impl From<Vec3> for glam::DVec3 {
         fn from(v: Vec3) -> Self {
-            glam::DVec3::new(v.x, v.y, v.z)
+            Self::new(v.x, v.y, v.z)
         }
     }
 }
@@ -210,30 +202,6 @@ mod tests {
         assert_eq!(
             Vec3::ONE,
             Vec3::new(1.0 as Scalar, 1.0 as Scalar, 1.0 as Scalar)
-        );
-        assert_eq!(
-            Vec3::UP,
-            Vec3::new(0.0 as Scalar, 1.0 as Scalar, 0.0 as Scalar)
-        );
-        assert_eq!(
-            Vec3::DOWN,
-            Vec3::new(0.0 as Scalar, -1.0 as Scalar, 0.0 as Scalar)
-        );
-        assert_eq!(
-            Vec3::RIGHT,
-            Vec3::new(1.0 as Scalar, 0.0 as Scalar, 0.0 as Scalar)
-        );
-        assert_eq!(
-            Vec3::LEFT,
-            Vec3::new(-1.0 as Scalar, 0.0 as Scalar, 0.0 as Scalar)
-        );
-        assert_eq!(
-            Vec3::BACKWARD,
-            Vec3::new(0.0 as Scalar, 0.0 as Scalar, 1.0 as Scalar)
-        );
-        assert_eq!(
-            Vec3::FORWARD,
-            Vec3::new(0.0 as Scalar, 0.0 as Scalar, -1.0 as Scalar)
         );
     }
 

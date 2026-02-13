@@ -1,6 +1,6 @@
 [package]
 name = "spacetimedb_math"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 license = "MIT"
 description = "Common math types and SpacetimeDB integrations for server-side Rust modules."
@@ -19,14 +19,13 @@ glam = { version = "0.32", optional = true }
 nalgebra = { version = "0.34", optional = true }
 
 [features]
-default = ["f32"]
-# Use these for conversion support
+default = ["f32", "timing"]
 serde = ["dep:serde"]
 glam = ["dep:glam"]
 nalgebra = ["dep:nalgebra"]
+timing = []
 
 
-# Scalar selection (internal).
 # `f32`/`f64` as mutually-exclusive features
 f32 = []
 f64 = ["nalgebra?/std"]
